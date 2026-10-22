@@ -13,7 +13,10 @@ interface CartContextValue {
   total: number;
   count: number;
   add: (p: Product) => void;
-  remove: (p: Product) => void;
+  remove: (p: Product) => void; // resta 1 unidad
+  // CAMBIO (carrito): quita el producto completo sin importar su cantidad.
+  // Lo usa el botón "Quitar" de CartScreen.
+  removeLine: (p: Product) => void;
   clear: () => void;
 }
 
@@ -37,6 +40,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const removeLine = useCallback((p: Product) => {
+    setCart((prev) => {
+      const next = { ...prev };
+      delete next[p.id];
+      return next;
+    });
+  }, []);
+
   const clear = useCallback(() => setCart({}), []);
 
   const value = useMemo<CartContextValue>(() => {
@@ -51,8 +62,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         count += qty;
       }
     }
-    return { cart, lines, total, count, add, remove, clear };
-  }, [cart, add, remove, clear]);
+    return { cart, lines, total, count, add, remove, removeLine, clear };
+  }, [cart, add, remove, removeLine, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

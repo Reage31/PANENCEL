@@ -5,6 +5,8 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 // CAMBIO 1: se importa el carrito (provider y hook) y las dos pantallas nuevas.
 import { CartProvider, useCart } from './src/context/CartContext';
+// CAMBIO (carrito): se importa la nueva pantalla intermedia.
+import { CartScreen } from './src/screens/CartScreen';
 import { CheckoutScreen } from './src/screens/CheckoutScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { MenuScreen } from './src/screens/MenuScreen';
@@ -16,7 +18,8 @@ import { Order, PaymentMethod } from './src/types';
 type AuthRoute = 'login' | 'register';
 // CAMBIO 2: nuevo tipo con las pantallas a las que accede un usuario ya autenticado.
 // Sigue la misma idea que `AuthRoute`, sin instalar React Navigation todavía.
-type AppRoute = 'menu' | 'checkout' | 'success';
+// CAMBIO (carrito): se agrega 'cart' entre el menú y el pago.
+type AppRoute = 'menu' | 'cart' | 'checkout' | 'success';
 
 // CAMBIO 3: genera el código del pedido (ej. PAN-8503). Es de ejemplo; cuando
 // haya backend, el servidor debería generar el código para que no se repita.
@@ -68,7 +71,12 @@ function Root() {
         setRoute('login');
         return true;
       }
+      // CAMBIO (carrito): atrás desde Checkout vuelve al carrito, y desde el carrito al menú.
       if (user && screen === 'checkout') {
+        setScreen('cart');
+        return true;
+      }
+      if (user && screen === 'cart') {
         setScreen('menu');
         return true;
       }
@@ -91,14 +99,20 @@ function Root() {
     );
   }
 
+  // CAMBIO (carrito): el carrito va entre el menú y el pago. Al continuar pasa a Checkout.
+  if (screen === 'cart') {
+    return <CartScreen onBack={() => setScreen('menu')} onContinue={() => setScreen('checkout')} />;
+  }
+  // CAMBIO (carrito): onBack de Checkout ahora regresa al carrito (antes al menú).
   if (screen === 'checkout') {
-    return <CheckoutScreen onBack={() => setScreen('menu')} onConfirm={handleConfirm} />;
+    return <CheckoutScreen onBack={() => setScreen('cart')} onConfirm={handleConfirm} />;
   }
   // `&& order` evita un error si por algún motivo se llega aquí sin pedido.
   if (screen === 'success' && order) {
     return <OrderSuccessScreen order={order} onNewOrder={handleNewOrder} />;
   }
-  return <MenuScreen onContinue={() => setScreen('checkout')} />;
+  // CAMBIO (carrito): "Continuar" del menú ahora abre el carrito en lugar de ir directo al pago.
+  return <MenuScreen onContinue={() => setScreen('cart')} />;
 }
 
 export default function App() {

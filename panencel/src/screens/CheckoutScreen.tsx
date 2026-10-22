@@ -76,7 +76,8 @@ export function CheckoutScreen({ onBack, onConfirm }: Props) {
 
         <View style={{ gap: spacing.xs }}>
           <AppButton variant="dark" title="Generar código de pago" onPress={handleGenerate} />
-          <AppButton variant="link" title="Volver al menú" onPress={onBack} />
+          {/* CAMBIO (carrito): antes decía "Volver al menú". Ahora el paso anterior es el carrito. */}
+          <AppButton variant="link" title="Volver al carrito" onPress={onBack} />
         </View>
       </ScrollView>
 
